@@ -18,7 +18,7 @@ int main() {
         long long i=0,cnt=1,ans=0;
         while(i<n)
         {
-            if(a[i]<a[i+1])
+            if(a[i]<=a[i+1])
             {
                 cnt++;
             }
