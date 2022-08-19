@@ -20,7 +20,7 @@ public:
             return head;
         int length = 0;
         ListNode *tail, *thead = head;
-        getLengthAndTail(head, length, &tail);
+        getLengthAndTail(head, length, tail);
 
         k = k % length;
         if (k == 0)
@@ -37,7 +37,7 @@ public:
         return head;
     }
 
-    void getLengthAndTail(ListNode *head, int &n, ListNode **tail)
+    void getLengthAndTail(ListNode *head, int &n, ListNode *&tail)
     {
         n = 1;
         while (head->next != nullptr)
@@ -45,7 +45,7 @@ public:
             head = head->next;
             n++;
         }
-        *tail = head;
+        tail = head;
     }
 };
 
