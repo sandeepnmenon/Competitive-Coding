@@ -1,4 +1,5 @@
 mod contains_duplicate;
+mod two_sum;
 mod valid_anagram;
 
 fn main() {
@@ -12,6 +13,7 @@ fn main() {
     match problem_key.as_str() {
         "contains_duplicate" => contains_duplicate::run(),
         "valid_anagram" => valid_anagram::run(),
+        "two_sum" => two_sum::run(),
         _ => eprintln!("Problem {} not found", problem_key),
     }
 }
