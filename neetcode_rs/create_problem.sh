@@ -26,3 +26,9 @@ pub fn run() {
 }" > src/$problem_key/mod.rs
 
 echo "Module $problem_key created!"
+
+# Update main.rs
+# Add the new module
+echo "mod $problem_key;" | cat - src/main.rs > temp && mv temp src/main.rs
+
+echo "main.rs updated!"
