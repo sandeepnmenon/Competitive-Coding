@@ -1,63 +1,53 @@
 #include <bits/stdc++.h>
 #include <condition_variable>
 #include <iterator>
-#include <mutex>
+#include <semaphore>
+
 using namespace std;
 
 class ZeroEvenOdd {
 private:
   int n;
-  std::mutex mtx;
-  std::condition_variable cv;
-  bool is_zero;
-  bool is_odd;
+  binary_semaphore zero_sem{1};
+  binary_semaphore odd_sem{0};
+  binary_semaphore even_sem{0};
 
 public:
-  ZeroEvenOdd(int n) {
-    this->n = n;
-    is_zero = true;
-    is_odd = false;
-  }
+  ZeroEvenOdd(int n) { this->n = n; }
 
   // printNumber(x) outputs "x", where x is an integer.
   void zero(function<void(int)> printNumber) {
     for (int i = 0; i < n; ++i) {
-      unique_lock<mutex> lock(mtx);
-      cv.wait(lock, [this]() { return is_zero; });
+      zero_sem.acquire();
       printNumber(0);
-      is_zero = false;
-      is_odd = (i % 2 == 0) ? true : false;
-      cv.notify_all();
+      if (i % 2 == 0)
+        odd_sem.release();
+      else
+        even_sem.release();
     }
   }
 
   void even(function<void(int)> printNumber) {
-    int numEven = n / 2;
-    for (int i = 0; i < numEven; ++i) {
-      unique_lock<mutex> lock(mtx);
-      cv.wait(lock, [this]() { return !is_zero && !is_odd; });
-      printNumber(i * 2 + 2);
-      is_zero = true;
-      cv.notify_all();
+    for (int i = 2; i <= n; i += 2) {
+      even_sem.acquire();
+      printNumber(i);
+      zero_sem.release();
     }
   }
 
   void odd(function<void(int)> printNumber) {
-    int numOdd = (n % 2 == 0) ? n / 2 : n / 2 + 1;
 
-    for (int i = 0; i < numOdd; ++i) {
-      unique_lock<mutex> lock(mtx);
-      cv.wait(lock, [this]() { return !is_zero && is_odd; });
-      printNumber(i * 2 + 1);
-      is_zero = true;
-      cv.notify_all();
+    for (int i = 1; i <= n; i += 2) {
+      odd_sem.acquire();
+      printNumber(i);
+      zero_sem.release();
     }
   }
 };
 
 // Driver code
 int main() {
-  int n = 1000;
+  int n = 2;
   ZeroEvenOdd zeroEvenOdd(n);
 
   auto printNumber = [](int num) { std::cout << num; };
