@@ -1,44 +1,36 @@
-#include <iostream>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <iostream>
+#include <mutex>
+#include <semaphore>
+#include <thread>
 #include <vector>
 
 class Foo {
 private:
-    std::mutex mtx;
-    std::condition_variable cv;
-    int step;
+    std::binary_semaphore first_sem{1};
+    std::binary_semaphore second_sem{0};
+    std::binary_semaphore third_sem{0};
 
 public:
-    Foo() : step(1) {
-
-    }
+    Foo() {}
 
     void first(std::function<void()> printFirst) {
-        std::unique_lock<std::mutex> lock(mtx);
-
+        first_sem.acquire();
         // printFirst() outputs "first". Do not change or remove this line.
         printFirst();
-        step = 2;
-        cv.notify_all();
+        second_sem.release();
     }
 
     void second(std::function<void()> printSecond) {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [this] { return step >= 2; });
-
+        second_sem.acquire();
         // printSecond() outputs "second". Do not change or remove this line.
         printSecond();
-        step = 3;
-        cv.notify_all();
+        third_sem.release();
     }
 
     void third(std::function<void()> printThird) {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [this] { return step >= 3; });
-
+        third_sem.acquire();
         // printThird() outputs "third". Do not change or remove this line.
         printThird();
     }
@@ -61,7 +53,7 @@ int main() {
     threads.emplace_back(&Foo::second, &foo, printSecond);
 
     // Wait for all threads to complete
-    for (auto& t : threads) {
+    for (auto &t : threads) {
         t.join();
     }
 

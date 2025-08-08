@@ -1,8 +1,9 @@
-#include <iostream>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <iostream>
+#include <mutex>
+#include <semaphore>
+#include <thread>
 #include <vector>
 
 using namespace std;
@@ -10,37 +11,27 @@ using namespace std;
 class FooBar {
 private:
     int n;
-    std::mutex mtx;
-    std::condition_variable cv;
-    bool foo_now;
+    binary_semaphore foo_now_sem{1};
+    binary_semaphore bar_now_sem{0};
+
 public:
-    FooBar(int n) {
-        this->n = n;
-        foo_now=true;
-    }
+    FooBar(int n) { this->n = n; }
 
     void foo(function<void()> printFoo) {
-
         for (int i = 0; i < n; i++) {
-            std::unique_lock<std::mutex> lock(mtx);
-            cv.wait(lock, [this] { return foo_now; });
-        	// printFoo() outputs "foo". Do not change or remove this line.
-        	printFoo();
-            foo_now=false;
-            cv.notify_one();
+            foo_now_sem.acquire();
+            // printFoo() outputs "foo". Do not change or remove this line.
+            printFoo();
+            bar_now_sem.release();
         }
     }
 
     void bar(function<void()> printBar) {
-
         for (int i = 0; i < n; i++) {
-            std::unique_lock<std::mutex> lock(mtx);
-            cv.wait(lock, [this] { return !foo_now; });
-
-        	// printBar() outputs "bar". Do not change or remove this line.
-        	printBar();
-            foo_now=true;
-            cv.notify_one();
+            bar_now_sem.acquire();
+            // printBar() outputs "bar". Do not change or remove this line.
+            printBar();
+            foo_now_sem.release();
         }
     }
 };
@@ -60,7 +51,7 @@ int main() {
     threads.emplace_back(&FooBar::bar, &foobar, printBar);
 
     // Wait for all threads to complete
-    for (auto& t : threads) {
+    for (auto &t : threads) {
         t.join();
     }
 
