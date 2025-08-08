@@ -6,12 +6,12 @@
     ],
     "settings": {
         "clangd.arguments": [
-            "--std=c++17",
+            "--std=c++20",
             "--header-insertion=iwyu",
             "--completion-style=detailed",
             "--function-arg-placeholders=false"
         ],
-        "C_Cpp.intelliSenseEngine": "Disabled"
+        "C_Cpp.intelliSenseEngine": "disabled"
     },
     "extensions": {
         "recommendations": [
