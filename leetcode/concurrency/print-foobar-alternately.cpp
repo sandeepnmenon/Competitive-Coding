@@ -46,11 +46,8 @@ public:
 };
 
 // Driver code
-int main(int argc, char *argv[]) {
-    if (argc < 2){
-        std::cerr<<"Input an integer as command line argument"<<std::endl;
-    }
-    int n=std::stoi(argv[1]);
+int main() {
+    int n = 3;
     FooBar foobar(n);
 
     auto printFoo = []() { std::cout << "foo"; };
